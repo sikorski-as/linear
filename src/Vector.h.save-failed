@@ -180,11 +180,9 @@ public:
         }
         dataBlock[0] = item;
         count++;
-        /*
         std::cout << "after prepend("<< "." <<"):\n";
         for(size_type i = 0; i < count; i++)
             std::cout << "\t[ " << dataBlock[i] << " ]\n";
-        */
     }
 
     void insert(const const_iterator& insertPosition, const Type& item)
