@@ -72,8 +72,7 @@ public:
 
     Vector(std::initializer_list<Type> initList) : dataBlock(nullptr), count(0), capacity(0)
     {
-        capacity = count;
-        capacity = newCapacity();
+        capacity = initList.size();
         dataBlock = allocBlock(capacity);
         for(const_reference listElement: initList)
         {
@@ -160,51 +159,45 @@ public:
 
     void prepend(const Type& item)
     {
+        insert(begin(), item);
+    }
+
+    void insert(const const_iterator& insertPosition, const Type& item)
+    {
+        std::cout << "====================================================\n";
+        std::cout << "index of the iterator " << insertPosition.index << "\n";
+        std::cout << "value to be placed inserted: " << item << "\n";
+        std::cout << "capacity:" << capacity << "\n";
         if(noSpace())
         {
+            std::cout << "no space!\n";
             pointer newDataBlock = allocBlock(newCapacity());
-            for(size_type i = 0; i < count; i++)
+            for(size_type i = 0; i < insertPosition.index; i++)
             {
-                newDataBlock[i + 1] = dataBlock[i];
+                newDataBlock[i] = dataBlock[i];
             }
+            for(size_type i = count; i > insertPosition.index; i--)
+            {
+                newDataBlock[i] = dataBlock[i - 1];
+            }
+            newDataBlock[insertPosition.index] = item;
             deallocBlock(dataBlock);
             dataBlock = newDataBlock;
             capacity = newCapacity();
         }
         else
         {
-            for(size_type i = count; i > 0; i--)
+            std::cout << "there's space!\n";
+            for(size_type i = count; i > insertPosition.index; i--)
             {
                 dataBlock[i] = dataBlock[i - 1];
+                std::cout << "copying [" << i - 1 << " to " << i << "\n";
             }
+            dataBlock[insertPosition.index] = item;
         }
-        dataBlock[0] = item;
         count++;
-        /*
-        std::cout << "after prepend("<< "." <<"):\n";
         for(size_type i = 0; i < count; i++)
-            std::cout << "\t[ " << dataBlock[i] << " ]\n";
-        */
-    }
-
-    void insert(const const_iterator& insertPosition, const Type& item)
-    {
-        (void)insertPosition;
-        (void)item;
-        /*
-        if(noSpace())
-        {
-            pointer newDataBlock = allocBlock(newCapacity());
-            for(size_type i = 0; i < count; i++)
-            {
-                newDataBlock[i] = dataBlock[i];
-            }
-            deallocBlock(dataBlock);
-            dataBlock = newDataBlock;
-            capacity = newCapacity();
-        }
-        */
-
+            std::cout << "\t" << i << ": " << dataBlock[i] << "\n";
     }
 
     Type popFirst()
@@ -240,9 +233,12 @@ public:
 
     void erase(const const_iterator& firstIncluded, const const_iterator& lastExcluded)
     {
-        (void)firstIncluded;
-        (void)lastExcluded;
-        throw std::runtime_error("TODO");
+        size_type placeToInsert = firstIncluded.index;
+        for(size_type i = lastExcluded.index; i < count; i++)
+        {
+            dataBlock[placeToInsert++] = dataBlock[i];
+        }
+        count -= (lastExcluded.index - firstIncluded.index);
     }
 
     iterator begin()
