@@ -4,8 +4,8 @@
 
 #include "Vector.h"
 #include "LinkedList.h"
+#include <iostream>
 
-/*
 namespace
 {
 
@@ -19,14 +19,13 @@ void perfomTest()
 }
 
 } // namespace
-*/
+
 
 int main(int argc, char** argv)
 {
-    /*
-    const std::size_t repeatCount = argc > 1 ? std::atoll(argv[1]) : 10000;
+    std::cout << "APLIKACJA PROFILUJACA:\n";
+    const std::size_t repeatCount = argc > 1 ? std::atoll(argv[1]) : 100000;
     for (std::size_t i = 0; i < repeatCount; ++i)
         perfomTest();
-    */
     return 0;
 }

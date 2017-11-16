@@ -9,7 +9,7 @@
 #include <boost/test/test_tools.hpp>
 
 #include <boost/mpl/list.hpp>
-/*
+
 namespace
 {
 
@@ -937,5 +937,3 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(GivenNonEmptyCollection_WhenErasingRange_ThenSizeI
 // If Iterator methods are to be changed, then new ConstIterator tests are required.
 
 BOOST_AUTO_TEST_SUITE_END()
-
-*/

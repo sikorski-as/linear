@@ -4,7 +4,6 @@
 #include <cstddef>
 #include <initializer_list>
 #include <stdexcept>
-#include <iostream>
 
 namespace aisdi
 {
@@ -23,246 +22,276 @@ public:
 
     class ConstIterator;
     class Iterator;
-    friend ConstIterator;
-    friend Iterator;
     using iterator = Iterator;
     using const_iterator = ConstIterator;
+
 private:
-    size_type count;
-    struct Node
+    class Node
     {
-        Type data;
+    public:
+        Node() :next(nullptr), prev(nullptr)
+        {
+
+        }
+        Node(const value_type &item) :item(item), next(nullptr), prev(nullptr)
+        {
+
+        }
+        value_type item;
         Node * next;
         Node * prev;
-    };
-    Node * head;
-    Node * tail;
 
-    void initSentinel() // inits container, creates sentinel
-    {
-        head = new Node;
-        head -> next = nullptr;
-        head -> prev = nullptr;
-        tail = head;
-        count = 0;
-    }
-
-    void clear() // removes sentinel as well
-    {
-        Node * nextBuffer;
-        Node * current = head;
-        while(current != tail)
-        {
-            nextBuffer = current -> next;
-            delete current;
-            current = nextBuffer;
-        }
-        delete tail;
-        count = 0;
-    }
-
-    void add(const Node * passedNodePointer, const Type & item)
-    {
-        Node * nodePointer = const_cast<Node *>(passedNodePointer);
-        Node * newNode = new Node;
-        if(nodePointer == head)
-        {
-            newNode -> prev = nullptr;
-            head -> prev = newNode;
-            newNode -> next = head;
-            head = newNode;
-        }
-        else
-        {
-            std::cout << "A\n";
-            newNode -> prev = nodePointer -> prev;
-            std::cout << "B\n";
-            if(nodePointer->prev == nullptr)
-                std::cout << "POINTER 1 is nullptr\n";
-            if((nodePointer->prev)->next == nullptr)
-                std::cout << "POINTER 2 is nullptr\n";
-            (nodePointer->prev)->next = newNode;
-        }
-        std::cout << "C\n";
-        newNode -> next = nodePointer;
-        std::cout << "D\n";
-        newNode -> data = item;
-        std::cout << "E\n";
-        nodePointer -> prev = newNode;
-        count++;
-    }
-
-    void remove(const Node * nodePointer) // const??
-    {
-        Node * followingNode = nodePointer->next;
-        if(nodePointer == head)
-        {
-            head = followingNode;
-        }
-        followingNode->prev = nullptr;
-        delete nodePointer;
-        count--;
-    }
+    } * first, * last;
+    size_type nodeNr;
 
 public:
+
     LinkedList()
     {
-        initSentinel();
+        nodeNr = 0;
+        Node * newNode = new Node();
+        first = newNode;
+        last = newNode;
     }
 
-    LinkedList(std::initializer_list<Type> initList)
+    LinkedList(std::initializer_list<Type> l)
     {
-        initSentinel();
-        for(const_reference listElement: initList)
-        {
-            append(listElement);
-        }
+        nodeNr = 0;
+        Node * newNode = new Node(); // sentinel
+        first = newNode;
+        last = newNode;
+        if(l.size() != 0)
+            for(auto p = l.begin(); p != l.end(); ++p)
+                append(*p);
     }
 
     LinkedList(const LinkedList& other)
     {
-        Node * current = other.head;
-        while(current != other.tail)
-        {
-            std::cout << "Pre-append\n";
-            append(current->data);
-            std::cout << "After-append\n";
-            current = current->next;
-        }
+        nodeNr=0;
+        Node * newNode = new Node();
+        first = newNode;
+        last = newNode;
+        for(auto i = other.cbegin(); i != other.cend(); ++i)
+            append(*i);
     }
 
-    LinkedList(LinkedList&& other) : count(other.count), head(other.head), tail(other.tail)
+    LinkedList(LinkedList&& other)
     {
-        other.initSentinel();
+        first = other.first;
+        last = other.last;
+        nodeNr = other.nodeNr;
+        other.nodeNr = 0;
+        other.last = nullptr;
+        other.first = nullptr;
     }
 
     ~LinkedList()
     {
-        clear();
-    }
+        Node * i = last;
+        while(i != first)
+        {
+            i = i->prev;
+            delete i->next;
 
+        }
+        delete i;
+    }
     LinkedList& operator=(const LinkedList& other)
     {
-        clear();
-        initSentinel();
+        if(first == other.first)
+            return *this;
 
-        Node * current = other.head;
-        while(current != other.tail)
-        {
-            append(current->data);
-            current = current->next;
-        }
+        erase(begin(), end());
+        for(auto it = other.begin(); it != other.end(); ++it)
+            append(*it);
 
         return *this;
     }
 
     LinkedList& operator=(LinkedList&& other)
     {
-        clear();
+        if(first == other.first)
+            return *this;
 
-        head = other.head;
-        tail = other.tail;
-        count = other.count;
+        erase(begin(),end());
+        delete last;
+        first = other.first;
+        last = other.last;
+        nodeNr = other.nodeNr;
+        other.first = nullptr;
+        other.last = nullptr;
+        other.nodeNr = 0;
 
-        other.initSentinel();
         return *this;
     }
 
     bool isEmpty() const
     {
-        return head == tail;
+        return nodeNr == 0;
     }
 
     size_type getSize() const
     {
-        return count;
+        return nodeNr;
     }
 
     void append(const Type& item)
     {
-        add(tail, item);
+        Node * ptr = new Node(item);
+        if(nodeNr == 0)
+        {
+
+            first = ptr;
+            last -> prev = ptr;
+            ptr -> next = last;
+
+        }
+        else
+        {
+            ptr -> prev = last -> prev;
+            last-> prev -> next = ptr;
+            last -> prev = ptr;
+            ptr -> next = last;
+        }
+        ++nodeNr;
     }
 
     void prepend(const Type& item)
     {
-        add(head, item);
+        Node * ptr = new Node(item); // node to be added
+        if(nodeNr == 0)
+        {
+
+            first = ptr;
+            last -> prev = ptr;
+            ptr -> next = last;
+
+        }
+        else
+        {
+            ptr -> prev = nullptr;
+            first -> prev = ptr;
+            ptr -> next = first;
+            first = ptr;
+        }
+        ++nodeNr;
     }
 
     void insert(const const_iterator& insertPosition, const Type& item)
     {
-        add(insertPosition.elementPointer, item);
+
+        if(isEmpty()) // not sure if it's needed
+            append(item);
+        else if(insertPosition == end())
+            append(item);
+        else if(insertPosition == begin())
+            prepend(item);
+        else
+        {
+            auto inserted = new Node(item); // node to be added
+            insertPosition.getNode() -> prev -> next = inserted;
+            inserted -> prev = insertPosition.getNode() -> prev;
+            insertPosition.getNode() -> prev = inserted;
+            inserted -> next = insertPosition.getNode();
+            ++nodeNr;
+        }
     }
 
     Type popFirst()
     {
         if(isEmpty())
-            throw std::logic_error("List is empty");
-        Type tempCopy = head->data;
-        remove(head);
-        return tempCopy;
+            throw std::logic_error("Attempt to pop from an empty container");
+
+        Node * ptr = first;
+        value_type returned = ptr->item;
+        erase(begin());
+
+        return returned;
     }
 
     Type popLast()
     {
         if(isEmpty())
-            throw std::logic_error("List is empty");
-        Node * that = tail->prev;
-        Type tempCopy = that->data;
-        remove(that);
-        return tempCopy;
+            throw std::logic_error("Attempt to pop from an empty container");
+
+        Node * ptr = last -> prev;
+        value_type returned = ptr -> item;
+        erase(--end());
+
+        return returned;
     }
+
 
     void erase(const const_iterator& position)
     {
-        if(isEmpty())
-            throw std::out_of_range("Bad iterator");
-        remove(position.elementPointer);
-    }
+        if(isEmpty() || position == cend())
+            throw std::out_of_range("Attempt to erase item out of scope or the container is empty");
 
-    void erase(const const_iterator& firstIncluded, const const_iterator& lastExcluded) // may need a range-check
-    {
-        if(isEmpty())
-            throw std::out_of_range("Bad iterator");
-        Node * first = const_cast<Node*>(firstIncluded.elementPointer);
-        Node * last = const_cast<Node*>(lastExcluded.elementPointer);
-        if(first == head)
+        if(position == cbegin())
         {
-            head = last;
-            last -> prev = nullptr;
+            if(getSize() == 1)
+            {
+                delete first;
+                first = last;
+            }
+            else if(getSize() > 1)
+            {
+                auto toBeErased = first;
+                first = first->next;
+                first->prev = nullptr;
+                delete toBeErased;
+            }
+        }
+        else if(position == (cend()-1) )
+
+        {
+            auto ptr = last->prev;
+            last->prev = last->prev->prev;
+            last->prev->next = last;
+            delete ptr;
+
         }
         else
         {
-            (first -> prev) -> next = last;
-            last -> prev = first -> prev;
+            Node * erased = position.getNode();
+            erased->prev->next = erased->next;
+            erased->next->prev = erased->prev;
+            delete erased;
         }
-        Node * nextBuffer;
-        Node * current = first;
-        while(current != last)
+        --nodeNr;
+    }
+
+    void erase(const const_iterator& firstIncluded, const const_iterator& lastExcluded)
+    {
+        auto ptr = firstIncluded;
+        while(ptr != lastExcluded)
         {
-            nextBuffer = current -> next;
-            delete current;
-            current = nextBuffer;
+            auto erased = ptr; // temporary for deletion
+            ++ptr;
+            erase(erased);
         }
     }
 
+
     iterator begin()
     {
-        return ConstIterator(this, head);
+        return iterator(first);
     }
 
     iterator end()
     {
-        return ConstIterator(this, tail);
+        return iterator(last);
+
     }
 
     const_iterator cbegin() const
     {
-        return ConstIterator(this, head);
+        return const_iterator(first);
     }
 
     const_iterator cend() const
     {
-        return ConstIterator(this, tail);
+        return const_iterator(last);
     }
 
     const_iterator begin() const
@@ -280,107 +309,108 @@ public:
 template <typename Type>
 class LinkedList<Type>::ConstIterator
 {
-    friend LinkedList<Type>;
 public:
     using iterator_category = std::bidirectional_iterator_tag;
     using value_type = typename LinkedList::value_type;
     using difference_type = typename LinkedList::difference_type;
     using pointer = typename LinkedList::const_pointer;
     using reference = typename LinkedList::const_reference;
+
 protected:
-    const LinkedList<Type> * listPointer;
-    const LinkedList<Type>::Node * elementPointer;
-    ConstIterator(const LinkedList<Type> * initList, const LinkedList<Type>::Node * initElementPointer) : listPointer(initList), elementPointer(initElementPointer)
-    {
-
-    }
-
-    bool isItTail() const
-    {
-        return listPointer->tail == elementPointer;
-    }
-
-    bool isItHead() const
-    {
-        return listPointer->head == elementPointer;
-    }
+    Node* current;
 
 public:
-    explicit ConstIterator() : listPointer(nullptr), elementPointer(nullptr)
+    Node* getNode() const // should it be public or friend declatarion is needed?
+    {
+        return current;
+    }
+
+    explicit ConstIterator()
     {}
 
-    ConstIterator(const ConstIterator& other) : listPointer(other.listPointer), elementPointer(other.elementPointer) // can be removed
-    {
-
-    }
+    ConstIterator(Node* node):current(node) {}
 
     reference operator*() const
     {
-        if(isItTail())
-            throw std::out_of_range("Bad iterator");
-        return elementPointer->data;
+        if(current->next == nullptr) // sentinel detected
+            throw std::out_of_range("Attempt to dereference end() iterator");
+        return current->item;
     }
 
     ConstIterator& operator++()
     {
-        if(isItTail())
-            throw std::out_of_range("Bad iterator");
-        elementPointer = elementPointer->next;
+        if(current->next == nullptr) // sentinel detected
+            throw std::out_of_range("Attempt to increment end() itertator");
+        current = current->next;
         return *this;
     }
 
     ConstIterator operator++(int)
     {
-        auto tempCopy = *this;
-        operator++();
-        return tempCopy;
+        auto result = *this;
+        ++(*this);
+        return result;
     }
 
     ConstIterator& operator--()
     {
-        if(isItHead())
-            throw std::out_of_range("Bad iterator");
-        elementPointer = elementPointer->prev;
+        if(current->prev == nullptr) // head detected
+            throw std::out_of_range("Attempt to decrement begin() iterator");
+        current = current->prev;
         return *this;
     }
 
     ConstIterator operator--(int)
     {
-        auto tempCopy = *this;
-        operator--();
-        return tempCopy;
+        auto result = *this;
+        --(*this);
+        return result;
     }
 
     ConstIterator operator+(difference_type d) const
     {
-        (void)d;
-        throw std::runtime_error("WHAT IS IT SUPPOSED TO DO?");
+        auto it = *this;
+        for(difference_type i = 0; i < d; ++i)
+        {
+            if(it.current->next == nullptr) // sentinel detected
+                throw std::range_error("Attempt to move iterator efter end()");
+            it.current = it.current->next;
+        }
+        return it;
     }
 
     ConstIterator operator-(difference_type d) const
     {
-        (void)d;
-        throw std::runtime_error("WHAT IS IT SUPPOSED TO DO?");
+        auto it = *this;
+        for(difference_type i = 0; i < d; ++i)
+        {
+            if(it.current->prev == nullptr)
+                break; // or exception should be thrown?
+            it.current = it.current->prev;
+        }
+
+        return it;
     }
 
     bool operator==(const ConstIterator& other) const
     {
-        return other.listPointer == listPointer && other.elementPointer == elementPointer;
+        return current == other.current;
     }
 
     bool operator!=(const ConstIterator& other) const
     {
-        return other.listPointer != listPointer || other.elementPointer != elementPointer;
+        return current!=other.current;
     }
 };
 
 template <typename Type>
 class LinkedList<Type>::Iterator : public LinkedList<Type>::ConstIterator
 {
-    friend LinkedList<Type>;
 public:
     using pointer = typename LinkedList::pointer;
     using reference = typename LinkedList::reference;
+
+
 
     explicit Iterator()
     {}
@@ -430,6 +460,7 @@ public:
         // ugly cast, yet reduces code duplication.
         return const_cast<reference>(ConstIterator::operator*());
     }
+
 };
 
 }
