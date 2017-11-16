@@ -10,7 +10,7 @@ namespace
 {
 
 template <typename T>
-using LinearCollection = aisdi::LinkedList<T>;
+using LinearCollection = aisdi::Vector<T>;
 
 void perfomTest()
 {

@@ -163,13 +163,8 @@ public:
 
     void insert(const const_iterator& insertPosition, const Type& item)
     {
-        //std::cout << "====================================================\n";
-        //std::cout << "index of the iterator " << insertPosition.index << "\n";
-        //std::cout << "value to be placed inserted: " << item << "\n";
-        //std::cout << "capacity:" << capacity << "\n";
         if(noSpace())
         {
-            //std::cout << "no space!\n";
             pointer newDataBlock = allocBlock(newCapacity());
             for(size_type i = 0; i < insertPosition.index; i++)
             {
@@ -186,17 +181,13 @@ public:
         }
         else
         {
-            //std::cout << "there's space!\n";
             for(size_type i = count; i > insertPosition.index; i--)
             {
                 dataBlock[i] = dataBlock[i - 1];
-                //std::cout << "copying [" << i - 1 << " to " << i << "\n";
             }
             dataBlock[insertPosition.index] = item;
         }
         count++;
-        //for(size_type i = 0; i < count; i++)
-            //std::cout << "\t" << i << ": " << dataBlock[i] << "\n";
     }
 
     Type popFirst()
