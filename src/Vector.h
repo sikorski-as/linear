@@ -348,7 +348,7 @@ public:
     {
         auto preObject = *this;
         preObject.index += d;
-        if(preObject.index < 0 || preObject.index > pointedVector->count)
+        if(preObject.index > pointedVector->count)
             throw std::out_of_range("Bad iterator");
         return preObject;
     }
@@ -357,7 +357,7 @@ public:
     {
         auto preObject = *this;
         preObject.index -= d;
-        if(preObject.index < 0 || preObject.index > pointedVector->count)
+        if(preObject.index > pointedVector->count)
             throw std::out_of_range("Bad iterator");
         return preObject;
     }
