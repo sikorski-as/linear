@@ -41,14 +41,14 @@ private:
         Node * next;
         Node * prev;
 
-    } * first, * last;
-    size_type nodeNr;
+    } * first, * last; // for head and tail (sentinel)
+    size_type count;
 
 public:
 
     LinkedList()
     {
-        nodeNr = 0;
+        count = 0;
         Node * newNode = new Node();
         first = newNode;
         last = newNode;
@@ -56,7 +56,7 @@ public:
 
     LinkedList(std::initializer_list<Type> l)
     {
-        nodeNr = 0;
+        count = 0;
         Node * newNode = new Node(); // sentinel
         first = newNode;
         last = newNode;
@@ -67,7 +67,7 @@ public:
 
     LinkedList(const LinkedList& other)
     {
-        nodeNr=0;
+        count=0;
         Node * newNode = new Node();
         first = newNode;
         last = newNode;
@@ -79,8 +79,8 @@ public:
     {
         first = other.first;
         last = other.last;
-        nodeNr = other.nodeNr;
-        other.nodeNr = 0;
+        count = other.count;
+        other.count = 0;
         other.last = nullptr;
         other.first = nullptr;
     }
@@ -92,10 +92,10 @@ public:
         {
             i = i->prev;
             delete i->next;
-
         }
         delete i;
     }
+
     LinkedList& operator=(const LinkedList& other)
     {
         if(first == other.first)
@@ -117,54 +117,54 @@ public:
         delete last;
         first = other.first;
         last = other.last;
-        nodeNr = other.nodeNr;
+        count = other.count;
         other.first = nullptr;
         other.last = nullptr;
-        other.nodeNr = 0;
+        other.count = 0;
 
         return *this;
     }
 
     bool isEmpty() const
     {
-        return nodeNr == 0;
+        return count == 0;
     }
 
     size_type getSize() const
     {
-        return nodeNr;
+        return count;
     }
 
     void append(const Type& item)
     {
         Node * ptr = new Node(item);
-        if(nodeNr == 0)
+        if(count == 0)
         {
 
             first = ptr;
-            last -> prev = ptr;
-            ptr -> next = last;
+            last->prev = ptr;
+            ptr->next = last;
 
         }
         else
         {
-            ptr -> prev = last -> prev;
-            last-> prev -> next = ptr;
-            last -> prev = ptr;
-            ptr -> next = last;
+            ptr->prev = last->prev;
+            last->prev->next = ptr;
+            last->prev = ptr;
+            ptr->next = last;
         }
-        ++nodeNr;
+        ++count;
     }
 
     void prepend(const Type& item)
     {
         Node * ptr = new Node(item); // node to be added
-        if(nodeNr == 0)
+        if(count == 0)
         {
 
             first = ptr;
-            last -> prev = ptr;
-            ptr -> next = last;
+            last->prev = ptr;
+            ptr->next = last;
 
         }
         else
@@ -174,7 +174,7 @@ public:
             ptr -> next = first;
             first = ptr;
         }
-        ++nodeNr;
+        ++count;
     }
 
     void insert(const const_iterator& insertPosition, const Type& item)
@@ -193,7 +193,7 @@ public:
             inserted -> prev = insertPosition.getNode() -> prev;
             insertPosition.getNode() -> prev = inserted;
             inserted -> next = insertPosition.getNode();
-            ++nodeNr;
+            ++count;
         }
     }
 
@@ -225,7 +225,7 @@ public:
     void erase(const const_iterator& position)
     {
         if(isEmpty() || position == cend())
-            throw std::out_of_range("Attempt to erase item out of scope or the container is empty");
+            throw std::out_of_range("Attempt to erase an item out of scope or the container is empty");
 
         if(position == cbegin())
         {
@@ -258,7 +258,7 @@ public:
             erased->next->prev = erased->prev;
             delete erased;
         }
-        --nodeNr;
+        --count;
     }
 
     void erase(const const_iterator& firstIncluded, const const_iterator& lastExcluded)
@@ -309,6 +309,7 @@ public:
 template <typename Type>
 class LinkedList<Type>::ConstIterator
 {
+    friend LinkedList<Type>;
 public:
     using iterator_category = std::bidirectional_iterator_tag;
     using value_type = typename LinkedList::value_type;
@@ -318,29 +319,29 @@ public:
 
 protected:
     Node* current;
-
-public:
     Node* getNode() const // should it be public or friend declatarion is needed?
     {
         return current;
     }
+    ConstIterator(Node* node):current(node)
+    {
 
+    }
+public:
     explicit ConstIterator()
     {}
-
-    ConstIterator(Node* node):current(node) {}
 
     reference operator*() const
     {
         if(current->next == nullptr) // sentinel detected
-            throw std::out_of_range("Attempt to dereference end() iterator");
+            throw std::out_of_range("Attempt to dereference the end() iterator");
         return current->item;
     }
 
     ConstIterator& operator++()
     {
         if(current->next == nullptr) // sentinel detected
-            throw std::out_of_range("Attempt to increment end() itertator");
+            throw std::out_of_range("Attempt to increment the end() itertator");
         current = current->next;
         return *this;
     }
@@ -355,7 +356,7 @@ public:
     ConstIterator& operator--()
     {
         if(current->prev == nullptr) // head detected
-            throw std::out_of_range("Attempt to decrement begin() iterator");
+            throw std::out_of_range("Attempt to decrement the begin() iterator");
         current = current->prev;
         return *this;
     }
@@ -373,7 +374,7 @@ public:
         for(difference_type i = 0; i < d; ++i)
         {
             if(it.current->next == nullptr) // sentinel detected
-                throw std::range_error("Attempt to move iterator efter end()");
+                throw std::range_error("Attempt to move the iterator beyond end()");
             it.current = it.current->next;
         }
         return it;
@@ -406,11 +407,10 @@ public:
 template <typename Type>
 class LinkedList<Type>::Iterator : public LinkedList<Type>::ConstIterator
 {
+    friend LinkedList<Type>;
 public:
     using pointer = typename LinkedList::pointer;
     using reference = typename LinkedList::reference;
-
-
 
     explicit Iterator()
     {}

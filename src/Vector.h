@@ -4,7 +4,6 @@
 #include <cstddef>
 #include <initializer_list>
 #include <stdexcept>
-//#include <iostream>
 
 namespace aisdi
 {
@@ -306,14 +305,14 @@ public:
     reference operator*() const
     {
         if(index >= pointedVector->count)
-            throw std::out_of_range("Bad iterator");
+            throw std::out_of_range("Attempt to derefernce an end() iterator");
         return pointedVector->dataBlock[index];
     }
 
     ConstIterator& operator++()
     {
         if(index == pointedVector->count)
-            throw std::out_of_range("Bad iterator");
+            throw std::out_of_range("Attempt to increment an end() iterator");
         index++;
         return *this;
     }
@@ -321,7 +320,7 @@ public:
     ConstIterator operator++(int)
     {
         if(index == pointedVector->count)
-            throw std::out_of_range("Bad iterator");
+            throw std::out_of_range("Attempt to increment an end() iterator");
         auto preObject = *this;
         index++;
         return preObject;
@@ -330,7 +329,7 @@ public:
     ConstIterator& operator--()
     {
         if(index == 0)
-            throw std::out_of_range("Bad iterator");
+            throw std::out_of_range("Attempt to decrement a begin() iterator");
         index--;
         return *this;
     }
@@ -338,7 +337,7 @@ public:
     ConstIterator operator--(int)
     {
         if(index == 0)
-            throw std::out_of_range("Bad iterator");
+            throw std::out_of_range("Attempt to decrement a begin() iterator");
         auto preObject = *this;
         index--;
         return preObject;
@@ -349,7 +348,7 @@ public:
         auto preObject = *this;
         preObject.index += d;
         if(preObject.index > pointedVector->count)
-            throw std::out_of_range("Bad iterator");
+            throw std::out_of_range("Attempt to move the iterator beyond end()");
         return preObject;
     }
 
@@ -358,7 +357,7 @@ public:
         auto preObject = *this;
         preObject.index -= d;
         if(preObject.index > pointedVector->count)
-            throw std::out_of_range("Bad iterator");
+            throw std::out_of_range("Attempt to move the iterator beyond end()");
         return preObject;
     }
 
