@@ -60,14 +60,14 @@ public:
         Node * newNode = new Node(); // sentinel
         first = newNode;
         last = newNode;
-        if(l.size() != 0)
-            for(auto p = l.begin(); p != l.end(); ++p)
-                append(*p);
+        //if(l.size() != 0) // not sure if it's needed
+        for(auto p = l.begin(); p != l.end(); ++p)
+            append(*p);
     }
 
     LinkedList(const LinkedList& other)
     {
-        count=0;
+        count = 0;
         Node * newNode = new Node();
         first = newNode;
         last = newNode;
@@ -81,7 +81,7 @@ public:
         last = other.last;
         count = other.count;
         other.count = 0;
-        other.last = nullptr;
+        other.last = nullptr; // makes source useless; maybe sentinel should be intialized?
         other.first = nullptr;
     }
 
